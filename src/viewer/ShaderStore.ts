@@ -18,7 +18,7 @@ class ShaderStore {
   shaderData: Record<string, string> = {};
 
   constructor (appBaseUrl = '') {
-    this.baseUrl = `${appBaseUrl}${this.baseUrl}`;
+    this.baseUrl = `${appBaseUrl}${this.baseUrl}`.replace(/\/\//g, '/');
   }
 
   private async loadShader (shaderFile: string): Promise<string> {
