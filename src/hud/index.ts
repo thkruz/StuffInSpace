@@ -1,9 +1,11 @@
-/* eslint-disable no-loop-func */
-import { R2D, Events } from '@/constants';
+import { R2D } from '@/constants';
 import SatelliteGroup from '@satellite-viewer/SatelliteGroup';
 import { Viewer } from '@satellite-viewer/index';
 import HudWindowManager from './HudWindowManager';
 import searchBox from './SearchBox';
+import { SatelliteObject } from '@/common/interfaces/SatelliteObject';
+import Events from '@/common/interfaces/Events';
+import EventData from '@/common/interfaces/EventData';
 
 const supporteEvents: string[] = [];
 const windowManager = new HudWindowManager();
@@ -67,7 +69,7 @@ function setHtml (selector: string, html: string) {
   }
 }
 
-function onSelectedSatChange (satellite: Record<string, any>) {
+function onSelectedSatChange (satellite: SatelliteObject | undefined) {
   if (satellite) {
     document.querySelector('#sat-infobox')?.classList.add('visible');
     setHtml('#sat-info-title', satellite.OBJECT_NAME);
@@ -82,12 +84,13 @@ function onSelectedSatChange (satellite: Record<string, any>) {
   }
 }
 
-function onSatHover (event: any) {
-  const {
-    satId, satX, satY, satellite
-  } = event;
-
-  if (!satId || satId === -1) {
+function onSatHover ({
+  satId,
+  satX,
+  satY,
+  satellite,
+}: EventData[Events.satHover]) {
+  if (!satellite || !satId || satId === -1) {
     setHtml('#sat-hoverbox', '(none)');
     let element = document.querySelector('#sat-hoverbox') as HTMLElement;
     if (element) {
@@ -324,5 +327,5 @@ export default {
   setLoading,
   init,
   getSupportedEvents,
-  getCurrentSearch
+  getCurrentSearch,
 };
