@@ -1,3 +1,4 @@
+import { Transforms, Sgp4, EciVec3, Kilometers } from 'ootk';
 import axios from 'axios';
 import EventManager from '../utils/event-manager';
 import logger from '../utils/logger';
@@ -15,7 +16,6 @@ class SatelliteStore {
   updateDate?: Date;
   satelliteVelocities: Float32Array = new Float32Array();
   satellitePositions: Float32Array = new Float32Array();
-  satelliteAltitudes: Float32Array = new Float32Array();
   gotExtraData = false;
   gotPositionalData = false;
   loaded = false;
@@ -82,10 +82,9 @@ class SatelliteStore {
     }
   }
 
-  setPositionalData (satelliteVelocities: Float32Array, satellitePositions: Float32Array, satelliteAltitudes: Float32Array) {
+  setPositionalData (satelliteVelocities: Float32Array, satellitePositions: Float32Array) {
     this.satelliteVelocities = satelliteVelocities;
     this.satellitePositions = satellitePositions;
-    this.satelliteAltitudes = satelliteAltitudes;
     this.gotPositionalData = true;
   }
 
@@ -107,10 +106,6 @@ class SatelliteStore {
 
   getPositions () {
     return this.satellitePositions;
-  }
-
-  getAltitudes () {
-    return this.satelliteAltitudes;
   }
 
   getVelocitities () {
@@ -171,7 +166,6 @@ class SatelliteStore {
     }
 
     if (this.gotPositionalData) {
-      satellite.altitude = this.satelliteAltitudes[satelliteId];
       satellite.velocity = Math.sqrt(
         this.satelliteVelocities[satelliteId * 3] * this.satelliteVelocities[satelliteId * 3]
         + this.satelliteVelocities[satelliteId * 3 + 1] * this.satelliteVelocities[satelliteId * 3 + 1]
@@ -182,6 +176,27 @@ class SatelliteStore {
         y: this.satellitePositions[satelliteId * 3 + 1],
         z: this.satellitePositions[satelliteId * 3 + 2]
       };
+
+      const now = new Date();
+      let j = Sgp4.jday(
+        now.getUTCFullYear(),
+        now.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
+        now.getUTCDate(),
+        now.getUTCHours(),
+        now.getUTCMinutes(),
+        now.getUTCSeconds()
+      ).jd;
+      j += now.getUTCMilliseconds() * 1.15741e-8; // days per millisecond
+      const gmst = Sgp4.gstime(j);
+
+      const pxToRadius = 3185.5;
+      const posKm = {
+        x: satellite.position.x * pxToRadius,
+        y: satellite.position.y * pxToRadius,
+        z: satellite.position.z * pxToRadius
+      };
+      const alt = Transforms.eci2lla(posKm as EciVec3<Kilometers>, gmst).alt;
+      satellite.altitude = alt;
     }
 
     return satellite;

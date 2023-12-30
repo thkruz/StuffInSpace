@@ -77,6 +77,8 @@ function onSelectedSatChange (satellite: Record<string, any>) {
     setHtml('#sat-perigee', `${satellite.perigee?.toFixed(0)} km`);
     setHtml('#sat-inclination', `${(satellite.inclination * R2D).toFixed(2)}°`);
     setHtml('#sat-period', `${satellite.period?.toFixed(2)} min`);
+    setHtml('#sat-altitude', `${satellite.altitude.toFixed(2)} km`);
+    setHtml('#sat-velocity', `${satellite.velocity.toFixed(2)} km/s`);
   } else {
     document.querySelector('#sat-infobox')?.classList.remove('visible');
   }

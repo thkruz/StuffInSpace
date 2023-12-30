@@ -186,10 +186,9 @@ class Satellites implements SceneComponent, SelectableSatellite {
 
       this.satPos = new Float32Array(message.data.satPos);
       this.satVel = new Float32Array(message.data.satVel);
-      this.satAlt = new Float32Array(message.data.satAlt);
 
       this.satelliteStore.setPositionalData(
-        this.satVel, this.satPos, this.satAlt
+        this.satVel, this.satPos
       );
 
       if (!this.cruncherReady) {
