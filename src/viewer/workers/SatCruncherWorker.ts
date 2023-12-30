@@ -1,35 +1,31 @@
-import {
-  jday, twoline2satrec, eciToGeodetic, gstime, sgp4, SatRec
-} from 'satellite.js';
+import { SatelliteRecord, Sgp4 } from 'ootk';
 import logger from '../../utils/logger';
 
-const satCache: SatRec[] = [];
+const satCache: SatelliteRecord[] = [];
 let propergateInterval = 500;
 let runOnce = false;
 let config: Record<string, any> = {};
 let satPos: Float32Array;
 let satVel: Float32Array;
-let satAlt: Float32Array;
 let running = true;
 let timer: number;
 
 function propagate () {
   const now = new Date();
-  let j = jday(
+  let j = Sgp4.jday(
     now.getUTCFullYear(),
     now.getUTCMonth() + 1, // Note, this function requires months in range 1-12.
     now.getUTCDate(),
     now.getUTCHours(),
     now.getUTCMinutes(),
     now.getUTCSeconds()
-  );
+  ).jd;
   j += now.getUTCMilliseconds() * 1.15741e-8; // days per millisecond
-  const gmst = gstime(j); //  satellite.gstime_from_jday(j);
 
   for (let i = 0; i < satCache.length; i++) {
     const m = (j - satCache[i].jdsatepoch) * 1440.0; // 1440 = minutes_per_day
-    const pv: any = sgp4(satCache[i], m);
-    let x; let y; let z; let vx; let vy; let vz; let alt;
+    const pv: any = Sgp4.propagate(satCache[i], m);
+    let x; let y; let z; let vx; let vy; let vz;
     try {
       x = pv.position.x; // translation of axes from earth-centered inertial
       y = pv.position.y; // to OpenGL is done in shader with projection matrix
@@ -37,7 +33,6 @@ function propagate () {
       vx = pv.velocity.x;
       vy = pv.velocity.y;
       vz = pv.velocity.z;
-      alt = eciToGeodetic(pv.position, gmst).height;
     } catch (e) {
       x = 0;
       y = 0;
@@ -45,7 +40,6 @@ function propagate () {
       vx = 0;
       vy = 0;
       vz = 0;
-      alt = 0;
     }
 
     const pxToRadius = 3185.5;
@@ -58,21 +52,17 @@ function propagate () {
     satVel[i * 3] = vx;
     satVel[i * 3 + 1] = vz;
     satVel[i * 3 + 2] = vy;
-
-    satAlt[i] = alt;
   }
 
   postMessage(
     {
       satPos: satPos.buffer,
       satVel: satVel.buffer,
-      satAlt: satAlt.buffer
     }
     // [satPos.buffer, satVel.buffer, satAlt.buffer]
   );
   satPos = new Float32Array(satCache.length * 3);
   satVel = new Float32Array(satCache.length * 3);
-  satAlt = new Float32Array(satCache.length);
   // logger.debug('sat-cruncher propagate: ' + (performance.now() - start) + ' ms');
 
   if (!runOnce && running) {
@@ -83,7 +73,6 @@ function propagate () {
   }
 }
 
-// eslint-disable-next-line func-names, space-before-function-paren
 onmessage = function (message) {
   try {
     logger.debug('Sat cruncher worker handling message');
@@ -125,7 +114,7 @@ onmessage = function (message) {
     for (let i = 0; i < len; i++) {
       const extra: Record<string, any> = {};
       // perform and store sat init calcs
-      const satrec = twoline2satrec(satData[i].TLE_LINE1, satData[i].TLE_LINE2);
+      const satrec = Sgp4.createSatrec(satData[i].TLE_LINE1, satData[i].TLE_LINE2);
 
       // keplerian elements
       extra.inclination = satrec.inclo; // rads
@@ -147,7 +136,6 @@ onmessage = function (message) {
 
     satPos = new Float32Array(len * 3);
     satVel = new Float32Array(len * 3);
-    satAlt = new Float32Array(len);
 
     const postStart = Date.now();
     postMessage({
