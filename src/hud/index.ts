@@ -4,7 +4,7 @@ import { Viewer } from '@satellite-viewer/index';
 import HudWindowManager from './HudWindowManager';
 import searchBox from './SearchBox';
 import { SatelliteObject } from '@/common/interfaces/SatelliteObject';
-import Events from '@/common/interfaces/Events';
+import Events from '@/common/enums/Events';
 import EventData from '@/common/interfaces/EventData';
 
 const supporteEvents: string[] = [];

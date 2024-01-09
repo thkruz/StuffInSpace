@@ -2,7 +2,7 @@ import axios from 'axios';
 import EventManager from '../utils/event-manager';
 import logger from '../utils/logger';
 import { SatelliteObject } from '../common/interfaces/SatelliteObject';
-import Events from '@/common/interfaces/Events';
+import Events from '@/common/enums/Events';
 
 const config = {
   baseUrl: import.meta.env.BASE_URL

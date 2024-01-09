@@ -1,5 +1,5 @@
 import { SatelliteObject } from '@/common/interfaces/SatelliteObject';
-import Events from './Events';
+import Events from '../enums/Events';
 
 /**
  * Represents the data structure for various events in the application.

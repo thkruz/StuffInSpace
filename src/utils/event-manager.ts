@@ -1,5 +1,5 @@
 import EventData from '@/common/interfaces/EventData';
-import Events from '@/common/interfaces/Events';
+import Events from '@/common/enums/Events';
 
 class EventManager {
   listeners: Record<string, Set<any>> = {};

@@ -1,4 +1,4 @@
-import Events from '@/common/interfaces/Events';
+import Events from '@/common/enums/Events';
 
 class Window {
   element?: HTMLElement;

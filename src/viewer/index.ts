@@ -17,7 +17,7 @@ import ShaderStore from './ShaderStore';
 import logger from '@/utils/logger';
 import { ArrowHelper, Raycaster, Vector2, Vector3 } from 'three';
 import { SatelliteObject } from '../common/interfaces/SatelliteObject';
-import Events from '@/common/interfaces/Events';
+import Events from '@/common/enums/Events';
 
 class Viewer {
   config: Record<string, any> = {
