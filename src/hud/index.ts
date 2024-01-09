@@ -89,7 +89,7 @@ function onSatHover ({
   satX,
   satY,
   satellite,
-}: EventData[Events.satHover]) {
+}: EventData[Events.satHover] = {} as EventData[Events.satHover]) {
   if (!satellite || !satId || satId === -1) {
     setHtml('#sat-hoverbox', '(none)');
     let element = document.querySelector('#sat-hoverbox') as HTMLElement;
@@ -103,9 +103,11 @@ function onSatHover ({
   } else {
     const satHoverBox = document.querySelector('#sat-hoverbox') as HTMLElement;
     if (satHoverBox) {
-      satHoverBox.innerHTML = satellite.OBJECT_NAME;
+      satHoverBox.innerHTML = satellite?.OBJECT_NAME || '';
       satHoverBox.style.display = 'block';
       satHoverBox.style.position = 'absolute';
+      satX ??= 0;
+      satY ??= 0;
       satHoverBox.style.left = `${satX + 20}px`;
       satHoverBox.style.top = `${satY - 10}px`;
     }
@@ -294,7 +296,7 @@ function getCurrentSearch () {
   return searchBox.getCurrentSearch();
 }
 
-function init (viewerInstance: Viewer) {
+function init (viewerInstance: Viewer, appConfig: Record<string, any> = {}) {
   viewer = viewerInstance;
 
   windowManager.registerWindow('sat-infobox');
@@ -302,14 +304,6 @@ function init (viewerInstance: Viewer) {
   windowManager.registerWindow('help-window');
   windowManager.registerWindow('groups-window');
   windowManager.registerWindow('search-window');
-  windowManager.getWindow('search-window')?.addEventListener('close', () => {
-    viewer.getSatelliteGroups()?.clearSelect();
-    viewer.setSelectedSatelliteGroup();
-    const listItems = document.querySelectorAll('#groups-display>li');
-    for (const item of listItems) {
-      item.classList.remove('selected');
-    }
-  });
 
   searchBox.init(viewer, windowManager);
 
@@ -321,6 +315,11 @@ function init (viewerInstance: Viewer) {
   } else {
     onSatDataLoaded();
   }
+
+  console.log('xoooo', appConfig);
+  setHtml('.app-version', appConfig.appInfo.version);
+  setHtml('.build-date', appConfig.appInfo.buildDate);
+  setHtml('.release-date', appConfig.appInfo.buildDate);
 }
 
 export default {
