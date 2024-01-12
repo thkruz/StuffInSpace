@@ -84,13 +84,6 @@
         <div class="sat-info-value" id="sat-period">100  min</div>
       </div>
     </div>
-    <div id="zoom-controls">
-      <!--
-      <div id="center-loc" class="zoom-button">❂</div>
-      -->
-      <div id="zoom-in" class="zoom-button">+</div>
-      <div id="zoom-out" class="zoom-button">-</div>
-    </div>
     <div id="load-cover">
       <div id="loader">
         <div id="spinner-holder"><img src="/images/loading.gif" alt="loading" class="loading-spinner"/></div>
@@ -176,6 +169,11 @@
     </div>
     <div class="window-content-holder">
     <div class="window-content">
+      <p class="app-info">
+        version: <span class="app-version">n/a</span><br/>
+        build date: <span class="build-date">n/a</span>
+      </p>
+
       <p>Stuff in Space is a realtime 3D map of objects in Earth orbit, visualized using WebGL.</p>
 
       <p>The website updates daily with orbit data from <a href="http://www.space-track.org">Space-Track.org</a>
@@ -195,6 +193,9 @@
     </div>
   </div>
 
+  <div class="release-date-holder">
+    Build date: <span class="release-date">&nbsp;</span>
+  </div>
   </body>
 </html>
 

@@ -1,7 +1,8 @@
-import { ShaderMaterial, UniformsUtils } from 'three';
+import { ShaderMaterial, UniformsUtils, Texture } from 'three';
 import { Color, TextureLoader, MeshPhongMaterial, SphereGeometry, Mesh, Group, BackSide, AdditiveBlending } from '../utils/three';
 import SceneComponent from './interfaces/SceneComponent';
 import SatelliteOrbitScene from './SatelliteOrbitScene';
+import { ViewerContext } from './interfaces/ViewerContext';
 
 class Earth implements SceneComponent {
   baseUrl = '';
@@ -14,10 +15,22 @@ class Earth implements SceneComponent {
   sphere: Mesh | undefined = undefined;
   group: Group | undefined = undefined;
 
-  initClouds (scene: SatelliteOrbitScene, group: Group) {
+  private async loadTexture (textureUrl: string): Promise<Texture> {
+    const loader = new TextureLoader();
+    return new Promise ((resolve, reject) => {
+      loader.load(
+        textureUrl,
+        texture => resolve(texture),
+        undefined,
+        error => reject(error)
+      );
+    });
+  }
+
+  async initClouds (scene: SatelliteOrbitScene, group: Group) {
     // this isn't a great implementation of the clouds,
     // so will leave off by default
-    const texture = new TextureLoader().load(`${this.basePath}/Earth_Cloud.jpg`);
+    const texture = await this.loadTexture(`${this.basePath}/Earth_Cloud.jpg`);
 
     const radius = scene.km2pixels(this.radiusInKm + 0.02);
     const geometry = new SphereGeometry(radius, 32, 32);
@@ -79,18 +92,19 @@ class Earth implements SceneComponent {
     group.add(mesh);
   }
 
-  init (scene: SatelliteOrbitScene, context: Record<string, any>) {
+  async init (scene: SatelliteOrbitScene, context: ViewerContext) {
     if (context.config) {
       this.baseUrl = context.config.baseUrl;
+      this.baseUrl = this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`;
     }
 
     this.group = new Group();
 
-    const basePath = `${this.baseUrl}/images`;
-    const dayTexture = new TextureLoader().load(`${basePath}/earth-blue-marble.jpg`);
-    const nightTexture = new TextureLoader().load(`${basePath}/nightearth-4096.png`);
-    const bumpTexture = new TextureLoader().load(`${basePath}/8081_earthbump4k.jpg`);
-    const earthSpecularMap = new TextureLoader().load(`${basePath}/earth-water.png`);
+    this.basePath = `${this.baseUrl}images`;
+    const dayTexture = await this.loadTexture(`${this.basePath}/earth-blue-marble.jpg`);
+    const nightTexture = await this.loadTexture(`${this.basePath}/nightearth-4096.png`);
+    const bumpTexture = await this.loadTexture(`${this.basePath}/8081_earthbump4k.jpg`);
+    const earthSpecularMap = await this.loadTexture(`${this.basePath}/earth-water.png`);
 
     const dayMaterial = new MeshPhongMaterial({
       map: dayTexture,
@@ -110,7 +124,9 @@ class Earth implements SceneComponent {
     this.group.add(this.sphere);
 
     if (this.addClouds) {
-      this.initClouds(scene, this.group);
+      this.initClouds(scene, this.group).catch(error => {
+        console.error('Error loading clouds', error);
+      });
     }
 
     if (this.addAtmosphere) {

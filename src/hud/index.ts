@@ -23,12 +23,15 @@ function showAttribution (visible: true) {
   if (attributionElem) {
     if (visible) {
       const satelliteStore = viewer.getSatelliteStore();
-      if (satelliteStore && satelliteStore.getAttribution()) {
-        const attribution = satelliteStore.getAttribution() || {};
+      if (satelliteStore?.getAttribution()) {
+        const attribution = satelliteStore.getAttribution();
         const updatedDate = satelliteStore.getUpdatedDate();
-        attributionElem.innerHTML = `Orbital object data from <a href="${attribution.url}">${attribution.name}</a> <span class="updated">(updated ${updatedDate})</span>`;
+
+        if (attribution) {
+          attributionElem.innerHTML = `Orbital object data from <a href="${attribution.url}">${attribution.name}</a> <span class="updated">(updated ${updatedDate})</span>`;
+          attributionElem.classList.remove('hidden');
+        }
       }
-      attributionElem.classList.remove('hidden');
     } else {
       attributionElem.classList.add('hidden');
     }
@@ -87,7 +90,7 @@ function onSelectedSatChange (satellite: Record<string, any>) {
 function onSatHover (event: any) {
   const {
     satId, satX, satY, satellite
-  } = event;
+  } = event || {};
 
   if (!satId || satId === -1) {
     setHtml('#sat-hoverbox', '(none)');
@@ -276,12 +279,12 @@ function getSupportedEvents () {
 }
 
 function initMenus () {
-  const elements = document.querySelectorAll('.menu-item');
-  for (let i = 0; i < elements.length; i++) {
-    const element = elements[i] as HTMLElement;
+  const elements = Array.from(document.querySelectorAll('.menu-item'));
+
+  for (const element of elements) {
     element.addEventListener('click', () => {
-      const action = element.dataset.action;
-      if (action && action.startsWith('open:')) {
+      const action = (element as HTMLElement).dataset.action;
+      if (action?.startsWith('open:')) {
         const parts = action.split(':');
         windowManager.openWindow(parts[1]);
       }
@@ -293,7 +296,7 @@ function getCurrentSearch () {
   return searchBox.getCurrentSearch();
 }
 
-function init (viewerInstance: Viewer) {
+function init (viewerInstance: Viewer, appConfig: Record<string, any> = {}) {
   viewer = viewerInstance;
 
   windowManager.registerWindow('sat-infobox');
@@ -301,14 +304,6 @@ function init (viewerInstance: Viewer) {
   windowManager.registerWindow('help-window');
   windowManager.registerWindow('groups-window');
   windowManager.registerWindow('search-window');
-  windowManager.getWindow('search-window')?.addEventListener('close', () => {
-    viewer.getSatelliteGroups()?.clearSelect();
-    viewer.setSelectedSatelliteGroup();
-    const listItems = document.querySelectorAll('#groups-display>li');
-    for (const item of listItems) {
-      item.classList.remove('selected');
-    }
-  });
 
   searchBox.init(viewer, windowManager);
 
@@ -320,6 +315,11 @@ function init (viewerInstance: Viewer) {
   } else {
     onSatDataLoaded();
   }
+
+  console.log('xoooo', appConfig);
+  setHtml('.app-version', appConfig.appInfo.version);
+  setHtml('.build-date', appConfig.appInfo.buildDate);
+  setHtml('.release-date', appConfig.appInfo.buildDate);
 }
 
 export default {

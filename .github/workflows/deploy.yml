@@ -6,7 +6,7 @@ on:
     # - master
 
 env:
-  BASE_URL: /StuffInSpace
+  BASE_URL: /StuffInSpace/
 
 jobs:
   build:
@@ -26,7 +26,10 @@ jobs:
         uses: bahmutov/npm-install@v1
 
       - name: Build project
-        run: npm run build
+        run: |
+          bin/generate-appinfo.sh public/appinfo.json
+          cp public/appinfo.json src/appinfo.json
+          npm run build
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v3
