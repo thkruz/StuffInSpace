@@ -1,8 +1,11 @@
 import { SatelliteRecord, Sgp4 } from 'ootk';
 import logger from '../../utils/logger';
 
-const satCache: SatelliteRecord[] = [];
-let propergateInterval = 500;
+/**
+ * The interval in milliseconds between propagations
+ * @override config.propagateIntervalMs
+ */
+let propagateInterval = 16;
 let runOnce = false;
 let config: Record<string, any> = {};
 let satPos: Float32Array;
@@ -68,7 +71,7 @@ function propagate () {
   if (!runOnce && running) {
     timer = setTimeout(
       propagate,
-      propergateInterval
+      propagateInterval
     );
   }
 }
@@ -89,9 +92,9 @@ onmessage = function (message) {
         if (config.logLevel) {
           logger.setLogLevel(config.logLevel);
         }
-        if (config.propergateIntervalMs) {
-          propergateInterval = config.propergateIntervalMs;
-          logger.debug(`Adjusting propergateIntervalMs to be ${propergateInterval} ms`);
+        if (config.propagateIntervalMs) {
+          propagateInterval = config.propagateIntervalMs;
+          logger.debug(`Adjusting propagateIntervalMs to be ${propagateInterval} ms`);
         }
       }
       if (satData.state) {
