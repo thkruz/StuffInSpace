@@ -18,7 +18,7 @@
     "axios": "^1.6.4",
     "gl-matrix": "^3.4.3",
     "luxon": "^3.4.4",
-    "ootk-core": "^1.0.0-0",
+    "ootk-core": "^1.0.0-1",
     "three": "^0.157.0"
   },
   "devDependencies": {
